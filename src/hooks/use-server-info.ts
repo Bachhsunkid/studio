@@ -4,6 +4,7 @@ import { signalRConfig, getRandomWhoAmIUrl } from "@/lib/signalr-config";
 interface ServerInfoResponse {
   instance: string;
   time: string;
+  domain: string; // New field to indicate the host/domain
 }
 
 interface UseServerInfoOptions {

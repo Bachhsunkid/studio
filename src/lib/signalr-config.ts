@@ -1,6 +1,6 @@
 export const signalRConfig = {
-  // Backend URLs for random selection
-  backendUrls: ["http://localhost:5010", "http://localhost:5011"],
+  // Backend URLs for random selection - different IPs, same port
+  backendUrls: ["http://127.0.0.1:5010", "http://127.0.0.2:5010"],
 
   // Fallback single URL (for backwards compatibility)
   baseUrl: process.env.NEXT_PUBLIC_SIGNALR_URL || "http://localhost:8080",

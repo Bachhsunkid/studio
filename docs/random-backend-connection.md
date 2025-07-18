@@ -2,7 +2,7 @@
 
 ## Overview
 
-The frontend now randomly connects to backend servers on ports 5010 and 5011 for both SignalR connections and API calls (like whoami).
+The frontend now randomly connects to backend servers on different IP addresses (127.0.0.1:5010 and 127.0.0.2:5010) using the same port for both SignalR connections and API calls (like whoami).
 
 ## How it Works
 
@@ -10,10 +10,10 @@ The frontend now randomly connects to backend servers on ports 5010 and 5011 for
 
 ```typescript
 export const signalRConfig = {
-  // Backend URLs for random selection
+  // Backend URLs for random selection - different IPs, same port
   backendUrls: [
-    'http://localhost:5010',
-    'http://localhost:5011'
+    'http://127.0.0.1:5010',
+    'http://127.0.0.2:5010'
   ],
   // ... other config
 };
@@ -32,7 +32,19 @@ export const getRandomWhoAmIUrl = (): string => {
 };
 ```
 
-### 2. SignalR Service (`src/lib/signalr.ts`)
+### 2. Updated API Response
+
+The whoami API now returns additional domain information:
+
+```json
+{
+  "instance": "server-01",
+  "time": "2024-01-01T12:00:00.000Z",
+  "domain": "http://127.0.0.1:5010"
+}
+```
+
+### 3. SignalR Service (`src/lib/signalr.ts`)
 
 - **Random Hub Selection**: Automatically connects to a random SignalR hub on initialization
 - **Server Switching**: `switchToRandomServer()` method to connect to a different server
@@ -48,23 +60,25 @@ const hubUrl = signalRService.getCurrentHubUrl();
 await signalRService.switchToRandomServer();
 ```
 
-### 3. Server Info Hook (`src/hooks/use-server-info.ts`)
+### 4. Server Info Hook (`src/hooks/use-server-info.ts`)
 
 - **Random API Calls**: Each whoami API call goes to a random backend
-- **Real-time Updates**: Shows which server instance is currently responding
+- **Enhanced Response**: Now handles the `domain` field from the API
+- **Real-time Updates**: Shows which server instance and domain is currently responding
 
-### 4. UI Components
+### 5. UI Components
 
 #### Floating ServerInfo Component
 - Global floating button in top-right corner
-- Shows current server instance, SignalR hub, and available backends
+- Shows current server instance, domain, SignalR hub, and available backends
 - **Switch Button**: Manually switch to a different random server
 - **Refresh Button**: Get new server info (may hit different backend)
 
 #### Features:
 - **Instance**: Shows which backend instance responded to whoami API
+- **Domain**: Shows the full domain/URL that responded to the API call
 - **SignalR Hub**: Shows current SignalR connection URL
-- **Available Backends**: Lists all configured backend URLs
+- **Available Backends**: Lists all configured backend URLs (127.0.0.1:5010, 127.0.0.2:5010)
 - **Switch**: Reconnects SignalR to a different random server
 - **Refresh**: Calls whoami API on a random server
 
@@ -81,24 +95,28 @@ await signalRService.switchToRandomServer();
 
 ### Environment Setup
 
-Make sure both backend servers are running:
+Make sure both backend servers are running on different IPs:
 ```bash
-# Terminal 1
-dotnet run --urls=http://localhost:5010
+# Terminal 1 - First backend server
+dotnet run --urls=http://127.0.0.1:5010
 
-# Terminal 2  
-dotnet run --urls=http://localhost:5011
+# Terminal 2 - Second backend server  
+dotnet run --urls=http://127.0.0.2:5010
 ```
+
+Note: You may need to configure your system to recognize 127.0.0.2:
+- **Windows**: Usually works by default
+- **Linux/Mac**: May need to add `127.0.0.2 localhost` to `/etc/hosts`
 
 ## Expected Behavior
 
 1. **On Page Load**: 
-   - SignalR connects to random hub (5010 or 5011)
+   - SignalR connects to random hub (127.0.0.1:5010 or 127.0.0.2:5010)
    - Server info may come from either backend
 
 2. **On Refresh**: 
    - whoami API call goes to random backend
-   - May show different instance than SignalR connection
+   - May show different instance and domain than SignalR connection
 
 3. **On Switch**: 
    - SignalR disconnects and reconnects to different server
@@ -108,7 +126,7 @@ dotnet run --urls=http://localhost:5011
 
 - Check browser console for logs showing selected URLs
 - Server info component shows which servers are being used
-- Different refreshes may show different instance values
+- Different refreshes may show different instance/domain values
 - Switch button changes SignalR hub URL
 
 ## Load Balancing
@@ -126,8 +144,8 @@ To add more backends, simply update the `backendUrls` array:
 
 ```typescript
 backendUrls: [
-  'http://localhost:5010',
-  'http://localhost:5011',
-  'http://localhost:5012', // Add more as needed
+  'http://127.0.0.1:5010',
+  'http://127.0.0.2:5010',
+  'http://127.0.0.3:5010', // Add more as needed
 ]
 ```

@@ -13,6 +13,7 @@ import { getSignalRService } from "@/lib/signalr";
 interface ServerInfoResponse {
   instance: string;
   time: string;
+  domain: string; // New field to indicate the host/domain
 }
 
 interface ServerInfoProps {
@@ -158,6 +159,12 @@ const ServerInfo: React.FC<ServerInfoProps> = ({
                     <span className="text-sm font-medium">Instance:</span>
                     <Badge variant="secondary" className="font-mono">
                       {serverInfo.instance}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Domain:</span>
+                    <Badge variant="default" className="font-mono">
+                      {serverInfo.domain}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between">
